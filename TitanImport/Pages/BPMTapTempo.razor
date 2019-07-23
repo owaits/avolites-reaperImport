@@ -1,0 +1,34 @@
+﻿@page "/bpm"
+@inject HttpClient Http
+
+<h5>BPM Tap Tempo</h5>
+
+<p>Current BPM: @bpm BPM</p>
+
+<button class="btn btn-primary @(tapTime == null ? "" : "pulse")" @onclick="@UpdateBPM">@(tapTime == null ? "Tap me" : "Tap me again")</button>
+
+@code {
+    int bpm = 0;
+
+    DateTime? tapTime = null;
+
+    async Task UpdateBPM()
+    {
+        if (tapTime == null)
+        {
+            tapTime = DateTime.Now;
+        }
+        else
+        {
+            TimeSpan delta = DateTime.Now - (DateTime) tapTime;
+
+            if (delta.TotalMinutes < 1)
+            {
+                bpm = (int)(60000.0 / delta.TotalMilliseconds);
+                await Http.GetAsync($"http://localhost:4430/titan/script/2/Masters/SetSpeed?handle_userNumber=8.0&value={bpm}");
+            }
+
+            tapTime = null;
+        }
+    }
+}

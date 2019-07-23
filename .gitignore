@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs
+/TitanImport/obj/Release/netstandard2.0
+/TitanImport/bin/Debug/netstandard2.0
+/TitanImport/obj
