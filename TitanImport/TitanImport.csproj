@@ -13,4 +13,12 @@
     <PackageReference Include="Tewr.Blazor.FileReader" Version="0.12.19186" />
   </ItemGroup>
 
+  <ItemGroup>
+    <HtmlFiles Include="C:\Users\oliver.AVOLITES\Source\Repos\owaits\avolites-reaperImport\TitanImport\publish\TitanImport\dist\**\*.*"/>
+  </ItemGroup>
+  
+  <Target Name="CopyPublishToGitHubPages" AfterTargets="AfterPublish">
+    <Copy SourceFiles="@(HtmlFiles)" DestinationFiles="@(HtmlFiles->'..\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
 </Project>
