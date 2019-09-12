@@ -8,3 +8,6 @@
 /TitanImport/obj
 /TitanImport/bin/Release/netstandard2.0
 /TitanImport/publish
+
+# Include Github Pages DLL's
+!/_framework/*/*.dll
