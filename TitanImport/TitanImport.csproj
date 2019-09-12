@@ -7,14 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.0.0-preview6.19307.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="3.0.0-preview6.19307.2" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="3.0.0-preview6.19307.2" PrivateAssets="all" />
-    <PackageReference Include="Tewr.Blazor.FileReader" Version="0.12.19186" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.0.0-preview9.19424.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="3.0.0-preview9.19424.4" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="3.0.0-preview9.19424.4" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.0.0-preview9.19424.4" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="3.0.0-preview9.19424.4" PrivateAssets="all" />
+    
+    <PackageReference Include="Tewr.Blazor.FileReader" Version="0.15.0.19248" />
   </ItemGroup>
 
   <ItemGroup>
-    <HtmlFiles Include="C:\Users\oliver.AVOLITES\Source\Repos\owaits\avolites-reaperImport\TitanImport\publish\TitanImport\dist\**\*.*"/>
+    <HtmlFiles Include="C:\Users\oliver.AVOLITES\Source\Repos\owaits\avolites-reaperImport\TitanImport\publish\TitanImport\dist\**\*.*" />
   </ItemGroup>
   
   <Target Name="CopyPublishToGitHubPages" AfterTargets="AfterPublish">

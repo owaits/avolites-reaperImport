@@ -75,7 +75,7 @@
     }
 
     @code {
-        ElementRef inputTypeFileElement;
+        ElementReference inputTypeFileElement;
 
         string consoleAddress = "localhost";
         List<ReaperCue> csvLines = new List<ReaperCue>();
@@ -83,7 +83,7 @@
         int selectedPlaybackId = 0;
         string connectionError = string.Empty;
 
-        protected override async Task OnInitAsync()
+        protected override async Task OnInitializedAsync()
         {
         }
 
@@ -121,10 +121,11 @@
                         {
                             Id = csvParts[0],
                             Name = csvParts[1],
-                            Timecode = csvParts[2],
-                            Colour = csvParts[3]
-
+                            Timecode = csvParts[2]
                         };
+
+                        if (csvParts.Length > 3)
+                            cue.Colour = csvParts[3];
 
                         csvLines.Add(cue);
                     }
