@@ -1,26 +1,33 @@
 ﻿@page "/"
 @using System.IO;
 @using Blazor.FileReader;
-@inject HttpClient Http
+@using Microsoft.AspNetCore.WebUtilities;
+@inject NavigationManager navigationManager;
+@inject HttpClient Http;
 @inject IFileReaderService fileReaderService;
 
 <h5>Reaper CSV Import</h5>
 
-<div class="alert alert-@(playbacks != null ? "success":"primary")">
-    <div class="form-group">
-        <label for="ipAddress">Console IP Address:</label>
-        <div class="input-group" id="ipAddress">
-            <input type="text" @bind="consoleAddress" />
-            <button class="btn btn-primary" @onclick="@Connect">Connect</button>
-         </div>
-     </div>
-    @if (!string.IsNullOrEmpty(connectionError))
-    {
-        <div class="alert alert-danger">
-            @connectionError
+@if (!hideConsoleAddress || !string.IsNullOrEmpty(connectionError))
+{
+    <div class="alert alert-@(playbacks != null ? "success" : "primary")">
+
+        <div class="form-group">
+            <label for="ipAddress">Console IP Address:</label>
+            <div class="input-group" id="ipAddress">
+                <input type="text" @bind="consoleAddress" />
+                <button class="btn btn-primary" @onclick="@(()=> Connect())">Connect</button>
+            </div>
         </div>
-    }
-</div>
+        @if (!string.IsNullOrEmpty(connectionError))
+        {
+            <div class="alert alert-danger">
+                @connectionError
+            </div>
+        }
+    </div>
+}
+
 
 
 
@@ -36,25 +43,25 @@
 
         @if (csvLines.Count() > 0)
         {
-<div class="alert alert-@(importError == string.Empty ? "success":"primary")">
-    <label for="reaperFile">Please select the cue list to apply the timecode to:</label>
-    <div class="input-group mb-3">
-        <select class="form-control" @bind="selectedPlaybackId">
-            <option value="" selected disabled hidden>--- Choose Cue List ---</option>
-            @foreach (var playback in playbacks.Where(playback => playback.type == "cueListHandle"))
-            {
-                <option value="@playback.titanId">@playback.Legend</option>
-            }
-        </select>
-        <button class="btn btn-primary ml-3" @onclick="@Import">Import</button>
-    </div>
-    @if (!string.IsNullOrEmpty(importError))
-    {
-        <div class="alert alert-danger">
-            @importError
-        </div>
-    }
-</div>
+            <div class="alert alert-@(importError == string.Empty ? "success":"primary")">
+                <label for="reaperFile">Please select the cue list to apply the timecode to:</label>
+                <div class="input-group mb-3">
+                    <select class="form-control" @bind="selectedPlaybackId">
+                        <option value="" selected disabled hidden>--- Choose Cue List ---</option>
+                        @foreach (var playback in playbacks.Where(playback => playback.type == "cueListHandle"))
+                        {
+                            <option value="@playback.titanId">@playback.Legend</option>
+                        }
+                    </select>
+                    <button class="btn btn-primary ml-3" @onclick="@Import">Import</button>
+                </div>
+                @if (!string.IsNullOrEmpty(importError))
+                {
+                    <div class="alert alert-danger">
+                        @importError
+                    </div>
+                }
+            </div>
 
             <table class="table">
                 <tr>
@@ -78,108 +85,133 @@
         ElementReference inputTypeFileElement;
 
         string consoleAddress = "localhost";
+        bool hideConsoleAddress = false;
+
         List<ReaperCue> csvLines = new List<ReaperCue>();
         Handle[] playbacks = null;
         int selectedPlaybackId = 0;
         string connectionError = string.Empty;
 
-        protected override async Task OnInitializedAsync()
+        protected string FormatApiRequest(string scriptUrl)
         {
+            if (consoleAddress.Contains(":"))
+            {
+                return $"http://{consoleAddress}/titan/{scriptUrl}";
+            }
+            else
+            {
+                return $"http://{consoleAddress}:4430/titan/{scriptUrl}";
+            }
+
         }
 
-        public async Task Connect()
+protected override async Task OnInitializedAsync()
+    {
+        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri); //you can use IURIHelper for older versions
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("apiUrl", out var url))
         {
-            try
-            {
-                playbacks = await Http.GetJsonAsync<Handle[]>($"http://{consoleAddress}:4430/titan/handles/Playbacks");
-            }
-            catch (Exception ex)
-            {
+            consoleAddress = url;
+            hideConsoleAddress = true;
+        }
+
+        Connect(true);
+    }
+
+    public async Task Connect(bool silent = false)
+    {
+        try
+        {
+            playbacks = await Http.GetJsonAsync<Handle[]>(FormatApiRequest("handles/Playbacks"));
+        }
+        catch (Exception ex)
+        {
+            if(!silent)
                 connectionError = $"Unable to connect to Titan console at address '{consoleAddress}'.";
-            }
-
-            StateHasChanged();
         }
 
-        public async Task ReadFile()
+        StateHasChanged();
+    }
+
+    public async Task ReadFile()
+    {
+        csvLines.Clear();
+        foreach (var file in await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
         {
-            csvLines.Clear();
-            foreach (var file in await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
+            // Read into buffer and act (uses less memory)
+            using (StreamReader stream = new StreamReader(await file.OpenReadAsync()))
             {
-                // Read into buffer and act (uses less memory)
-                using (StreamReader stream = new StreamReader(await file.OpenReadAsync()))
+                //Ignore Header
+                await stream.ReadLineAsync();
+
+                string line;
+                while (!string.IsNullOrEmpty(line = await stream.ReadLineAsync()))
                 {
-                    //Ignore Header
-                    await stream.ReadLineAsync();
+                    string[] csvParts = line.Split(',');
 
-                    string line;
-                    while (!string.IsNullOrEmpty(line = await stream.ReadLineAsync()))
+                    var cue = new ReaperCue()
                     {
-                        string[] csvParts = line.Split(',');
+                        Id = csvParts[0],
+                        Name = csvParts[1],
+                        Timecode = csvParts[2]
+                    };
 
-                        var cue = new ReaperCue()
-                        {
-                            Id = csvParts[0],
-                            Name = csvParts[1],
-                            Timecode = csvParts[2]
-                        };
+                    if (csvParts.Length > 3)
+                        cue.Colour = csvParts[3];
 
-                        if (csvParts.Length > 3)
-                            cue.Colour = csvParts[3];
-
-                        csvLines.Add(cue);
-                    }
-
-
+                    csvLines.Add(cue);
                 }
+
+
             }
         }
+    }
 
-        private string importError = null;
+    private string importError = null;
 
-        public async Task Import()
+    public async Task Import()
+    {
+        try
         {
-            try
+            foreach (var cue in csvLines)
             {
-                foreach (var cue in csvLines)
+                int cueNumber = int.Parse(cue.Id.Trim('M'));
+
+                if (!await Http.GetJsonAsync<bool>(FormatApiRequest($"script/2/Playbacks/DoesCueExist?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}")))
                 {
-                    int cueNumber = int.Parse(cue.Id.Trim('M'));
-
-                    if (!await Http.GetJsonAsync<bool>($"http://{consoleAddress}:4430/titan/script/2/Playbacks/DoesCueExist?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}"))
-                    {
-                        await Http.GetAsync($"http://{consoleAddress}:4430/titan/script/2/Playbacks/AppendOrInsertPlaybackCue?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}");
-                    }
-
-
-                    await Http.GetAsync($"http://{consoleAddress}:4430/titan/script/2/Playbacks/SetCueLegend?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&newLegend={cue.Name}");
-                    await Http.GetAsync($"http://{consoleAddress}:4430/titan/script/2/Timecode/SetCueTimecodeWithCueNumber?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&time={cue.Timecode}");
+                    await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/AppendOrInsertPlaybackCue?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}"));
                 }
-                importError = string.Empty;
+
+
+                await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/SetCueLegend?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&newLegend={cue.Name}"));
+                await Http.GetAsync(FormatApiRequest($"script/2/Timecode/SetCueTimecodeWithCueNumber?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&time={cue.Timecode}"));
             }
-            catch (Exception ex)
-            {
-                importError = ex.Message;
-            }
+            importError = string.Empty;
         }
-
-        class ReaperCue
+        catch (Exception ex)
         {
-            public string Id { get; set; }
-
-            public string Name { get; set; }
-
-            public string Timecode { get; set; }
-
-            public string Colour { get; set; }
+            importError = ex.Message;
         }
+    }
 
-        class Handle
-        {
-            public int titanId { get; set; }
-            public string type { get; set; }
-            public string Legend { get; set; }
+    class ReaperCue
+    {
+        public string Id { get; set; }
 
-        }
+        public string Name { get; set; }
+
+        public string Timecode { get; set; }
+
+        public string Colour { get; set; }
+    }
+
+    class Handle
+    {
+        public int titanId { get; set; }
+        public string type { get; set; }
+        public string Legend { get; set; }
+
+    }
 
 
 
