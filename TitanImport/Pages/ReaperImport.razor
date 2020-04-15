@@ -53,6 +53,7 @@
                             <option value="@playback.titanId">@playback.Legend</option>
                         }
                     </select>
+                    <button class="btn btn-secondary ml-3" @onclick="@(()=> Connect(true))">Refresh</button>
                     <button class="btn btn-primary ml-3" @onclick="@Import">Import</button>
                 </div>
                 @if (!string.IsNullOrEmpty(importError))
@@ -105,113 +106,125 @@
 
         }
 
-protected override async Task OnInitializedAsync()
-    {
-        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri); //you can use IURIHelper for older versions
-
-        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("apiUrl", out var url))
+        protected override async Task OnInitializedAsync()
         {
-            consoleAddress = url;
-            hideConsoleAddress = true;
-        }
+            var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri); //you can use IURIHelper for older versions
 
-        Connect(true);
-    }
-
-    public async Task Connect(bool silent = false)
-    {
-        try
-        {
-            playbacks = await Http.GetJsonAsync<Handle[]>(FormatApiRequest("handles/Playbacks"));
-        }
-        catch (Exception ex)
-        {
-            if(!silent)
-                connectionError = $"Unable to connect to Titan console at address '{consoleAddress}'.";
-        }
-
-        StateHasChanged();
-    }
-
-    public async Task ReadFile()
-    {
-        csvLines.Clear();
-        foreach (var file in await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
-        {
-            // Read into buffer and act (uses less memory)
-            using (StreamReader stream = new StreamReader(await file.OpenReadAsync()))
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("apiUrl", out var url))
             {
-                //Ignore Header
-                await stream.ReadLineAsync();
+                consoleAddress = url;
+                hideConsoleAddress = true;
+            }
 
-                string line;
-                while (!string.IsNullOrEmpty(line = await stream.ReadLineAsync()))
+            Connect(true);
+        }
+
+        public async Task Connect(bool silent = false)
+        {
+            try
+            {
+                playbacks = await Http.GetJsonAsync<Handle[]>(FormatApiRequest("handles/Playbacks"));
+            }
+            catch (Exception ex)
+            {
+                if(!silent)
+                    connectionError = $"Unable to connect to Titan console at address '{consoleAddress}'.";
+            }
+
+            StateHasChanged();
+        }
+
+        public async Task ReadFile()
+        {
+            csvLines.Clear();
+            foreach (var file in await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
+            {
+                // Read into buffer and act (uses less memory)
+                using (StreamReader stream = new StreamReader(await file.OpenReadAsync()))
                 {
-                    string[] csvParts = line.Split(',');
+                    //Ignore Header
+                    await stream.ReadLineAsync();
 
-                    var cue = new ReaperCue()
+                    string line;
+                    while (!string.IsNullOrEmpty(line = await stream.ReadLineAsync()))
                     {
-                        Id = csvParts[0],
-                        Name = csvParts[1],
-                        Timecode = csvParts[2]
-                    };
+                        string[] csvParts = line.Split(',');
 
-                    if (csvParts.Length > 3)
-                        cue.Colour = csvParts[3];
+                        var cue = new ReaperCue()
+                        {
+                            Id = csvParts[0],
+                            Name = csvParts[1],
+                            Timecode = FormatTimecode(csvParts[2])
+                        };
 
-                    csvLines.Add(cue);
+                        if (csvParts.Length > 3)
+                            cue.Colour = csvParts[3];
+
+                        csvLines.Add(cue);
+                    }
+
+
                 }
-
-
             }
         }
-    }
 
-    private string importError = null;
-
-    public async Task Import()
-    {
-        try
+        private string FormatTimecode(string time)
         {
-            foreach (var cue in csvLines)
+            List<string> timecodeParts = time.Split(new char[] { ':', '.' }).ToList();
+            if (timecodeParts.Count == 3)
             {
-                int cueNumber = int.Parse(cue.Id.Trim('M'));
-
-                if (!await Http.GetJsonAsync<bool>(FormatApiRequest($"script/2/Playbacks/DoesCueExist?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}")))
-                {
-                    await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/AppendOrInsertPlaybackCue?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}"));
-                }
-
-
-                await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/SetCueLegend?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&newLegend={cue.Name}"));
-                await Http.GetAsync(FormatApiRequest($"script/2/Timecode/SetCueTimecodeWithCueNumber?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&time={cue.Timecode}"));
+                timecodeParts.Insert(0, "0");
             }
-            importError = string.Empty;
+
+            return string.Join(":", timecodeParts.ToArray());
         }
-        catch (Exception ex)
+
+
+        private string importError = null;
+
+        public async Task Import()
         {
-            importError = ex.Message;
+            try
+            {
+                foreach (var cue in csvLines)
+                {
+                    int cueNumber = int.Parse(cue.Id.Trim('M'));
+
+                    if (!await Http.GetJsonAsync<bool>(FormatApiRequest($"script/2/Playbacks/DoesCueExist?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}")))
+                    {
+                        await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/AppendOrInsertPlaybackCue?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}"));
+                    }
+
+
+                    await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/SetCueLegend?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&newLegend={cue.Name}"));
+                    await Http.GetAsync(FormatApiRequest($"script/2/Timecode/SetCueTimecodeWithCueNumber?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&time={cue.Timecode}"));
+                }
+                importError = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                importError = ex.Message;
+            }
         }
-    }
 
-    class ReaperCue
-    {
-        public string Id { get; set; }
+        class ReaperCue
+        {
+            public string Id { get; set; }
 
-        public string Name { get; set; }
+            public string Name { get; set; }
 
-        public string Timecode { get; set; }
+            public string Timecode { get; set; }
 
-        public string Colour { get; set; }
-    }
+            public string Colour { get; set; }
+        }
 
-    class Handle
-    {
-        public int titanId { get; set; }
-        public string type { get; set; }
-        public string Legend { get; set; }
+        class Handle
+        {
+            public int titanId { get; set; }
+            public string type { get; set; }
+            public string Legend { get; set; }
 
-    }
+        }
 
 
 
