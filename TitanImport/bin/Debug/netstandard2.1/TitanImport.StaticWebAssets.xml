@@ -1,0 +1,4 @@
+﻿<StaticWebAssets Version="1.0">
+  <ContentRoot BasePath="/" Path="D:\owaits.github.com\avolites-reaperImport\TitanImport\bin\Debug\netstandard2.1\wwwroot\" />
+  <ContentRoot BasePath="_content/Tewr.Blazor.FileReader" Path="C:\Users\owaits\.nuget\packages\tewr.blazor.filereader\1.5.0.20093\build\..\staticwebassets\" />
+</StaticWebAssets>

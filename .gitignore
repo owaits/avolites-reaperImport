@@ -11,3 +11,5 @@
 
 # Include Github Pages DLL's
 !/_framework/*/*.dll
+/TitanImport/bin/Release/netstandard2.1
+/TitanImport/bin/Debug/netstandard2.1/wwwroot/_framework
