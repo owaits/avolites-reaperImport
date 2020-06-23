@@ -37,7 +37,16 @@
             <label for="reaperFile">Please select the reaper CSV to import:</label>
             <div class="input-group mb-3" id="reaperFile">
                 <input type="file" @ref="@inputTypeFileElement" />
-                <button class="btn btn-primary mb3" @onclick="@ReadFile">Load</button>
+                <select class="btn btn-primary mb-3" @bind="reaperFPS">
+                    <option value="100" selected>100 FPS</option>
+                    <option value="60">60 FPS</option>
+                    <option value="50">50 FPS</option>
+                    <option value="30">30 FPS</option>
+                    <option value="25">25 FPS</option>
+                    <option value="24">24 FPS</option>
+                </select>
+                &nbsp;
+                <button class="btn btn-primary mb-3" @onclick="@ReadFile">Load</button>
             </div>
         </div>
 
@@ -75,7 +84,7 @@
                     <tr>
                         <td>@cue.Id</td>
                         <td>@cue.Name</td>
-                        <td>@cue.Timecode</td>
+                        <td>@FormatTimecode(cue.Timecode,reaperFPS)</td>
                     </tr>
                 }
             </table>
@@ -92,6 +101,8 @@
         Handle[] playbacks = null;
         int selectedPlaybackId = 0;
         string connectionError = string.Empty;
+        int reaperFPS = 100;
+        Version titanVersion;
 
         protected string FormatApiRequest(string scriptUrl)
         {
@@ -124,6 +135,9 @@
             try
             {
                 playbacks = await Http.GetJsonAsync<Handle[]>(FormatApiRequest("handles/Playbacks"));
+
+                string version = await Http.GetJsonAsync<string>(FormatApiRequest("get/2/System/SoftwareVersion"));
+                titanVersion = Version.Parse(version.Split(' ')[0]);
             }
             catch (Exception ex)
             {
@@ -168,15 +182,45 @@
             }
         }
 
-        private string FormatTimecode(string time)
+        private TimeSpan FormatTimecode(string time)
         {
             List<string> timecodeParts = time.Split(new char[] { ':', '.' }).ToList();
             if (timecodeParts.Count == 3)
             {
                 timecodeParts.Insert(0, "0");
+
             }
 
-            return string.Join(":", timecodeParts.ToArray());
+            if (timecodeParts.Count < 4)
+                return TimeSpan.Zero;
+
+            TimeSpan t = new TimeSpan(0,int.Parse(timecodeParts[0]), int.Parse(timecodeParts[1]), int.Parse(timecodeParts[2]), int.Parse(timecodeParts[3]));
+
+            return t;
+        }
+
+        private TimeSpan NormalizeTo100FPS(TimeSpan time)
+        {
+            TimeSpan normalized;
+            switch (reaperFPS)
+            {
+                case 30:
+                    normalized = new TimeSpan(time.Days, time.Hours, time.Minutes, time.Seconds,(int) ((float)time.Milliseconds * (100f / 30f)));
+                    break;
+                default:
+                    normalized = time;
+                    break;
+            }
+
+            return normalized;
+        }
+
+        private string FormatTimecode(TimeSpan time, int fps)
+        {
+            if(fps > 0)
+                return $"{time.Hours.ToString("00")}:{time.Minutes.ToString("00")}:{time.Seconds.ToString("00")}.{time.Milliseconds.ToString("00")}/{fps}";
+
+            return $"{time.Hours.ToString("00")}:{time.Minutes.ToString("00")}:{time.Seconds.ToString("00")}.{time.Milliseconds.ToString("00")}";
         }
 
 
@@ -197,7 +241,11 @@
 
 
                     await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/SetCueLegend?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&newLegend={cue.Name}"));
-                    await Http.GetAsync(FormatApiRequest($"script/2/Timecode/SetCueTimecodeWithCueNumber?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&time={cue.Timecode}"));
+
+                    if(titanVersion < new Version(13,0))
+                        await Http.GetAsync(FormatApiRequest($"script/2/Timecode/SetCueTimecodeWithCueNumber?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&time={FormatTimecode(NormalizeTo100FPS(cue.Timecode),-1)}"));
+                    else
+                        await Http.GetAsync(FormatApiRequest($"script/2/Timecode/SetCueTimecodeWithCueNumber?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}&time={FormatTimecode(cue.Timecode, reaperFPS).Replace("/", "%2F")}"));
                 }
                 importError = string.Empty;
             }
@@ -213,7 +261,7 @@
 
             public string Name { get; set; }
 
-            public string Timecode { get; set; }
+            public TimeSpan Timecode { get; set; }
 
             public string Colour { get; set; }
         }
