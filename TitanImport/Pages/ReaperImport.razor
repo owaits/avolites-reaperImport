@@ -2,6 +2,7 @@
 @using System.IO;
 @using Blazor.FileReader;
 @using Microsoft.AspNetCore.WebUtilities;
+@using System.Net.Http.Json;
 @inject NavigationManager navigationManager;
 @inject HttpClient Http;
 @inject IFileReaderService fileReaderService;
@@ -134,9 +135,9 @@
         {
             try
             {
-                playbacks = await Http.GetJsonAsync<Handle[]>(FormatApiRequest("handles/Playbacks"));
+                playbacks = await Http.GetFromJsonAsync<Handle[]>(FormatApiRequest("handles/Playbacks"));
 
-                string version = await Http.GetJsonAsync<string>(FormatApiRequest("get/2/System/SoftwareVersion"));
+                string version = await Http.GetFromJsonAsync<string>(FormatApiRequest("get/2/System/SoftwareVersion"));
                 titanVersion = Version.Parse(version.Split(' ')[0]);
             }
             catch (Exception ex)
@@ -234,7 +235,7 @@
                 {
                     int cueNumber = int.Parse(cue.Id.Trim('M'));
 
-                    if (!await Http.GetJsonAsync<bool>(FormatApiRequest($"script/2/Playbacks/DoesCueExist?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}")))
+                    if (!await Http.GetFromJsonAsync<bool>(FormatApiRequest($"script/2/Playbacks/DoesCueExist?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}")))
                     {
                         await Http.GetAsync(FormatApiRequest($"script/2/Playbacks/AppendOrInsertPlaybackCue?handle_titanId={selectedPlaybackId}&cueNumber={cueNumber}"));
                     }
