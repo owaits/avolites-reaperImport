@@ -137,6 +137,9 @@
             {
                 playbacks = await Http.GetFromJsonAsync<Handle[]>(FormatApiRequest("handles/Playbacks"));
 
+                if (selectedPlaybackId == 0 && playbacks.Any())
+                    selectedPlaybackId = playbacks.First().titanId;
+
                 string version = await Http.GetFromJsonAsync<string>(FormatApiRequest("get/2/System/SoftwareVersion"));
                 titanVersion = Version.Parse(version.Split(' ')[0]);
             }
@@ -158,10 +161,11 @@
                 using (StreamReader stream = new StreamReader(await file.OpenReadAsync()))
                 {
                     //Ignore Header
-                    await stream.ReadLineAsync();
+                    string header = await stream.ReadLineAsync();
+                    Console.WriteLine("Header: " + header);
 
-                    string line;
-                    while (!string.IsNullOrEmpty(line = await stream.ReadLineAsync()))
+                    string line = await stream.ReadLineAsync();
+                    while (!string.IsNullOrEmpty(line))
                     {
                         string[] csvParts = line.Split(',');
 
@@ -176,9 +180,9 @@
                             cue.Colour = csvParts[3];
 
                         csvLines.Add(cue);
+
+                        line = await stream.ReadLineAsync();
                     }
-
-
                 }
             }
         }
