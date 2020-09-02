@@ -1,0 +1,149 @@
+#,Name,Start
+M1,Intro,0:00:01:22
+M2,Intro fuerte,0:00:03:07
+M3,Splash,0:00:10:06
+M4,TUN TUN TUN,0:00:14:23
+M5,Corte,0:00:15:12
+M6,Intro + fuerte,0:00:17:05
+M7,Splash,0:00:24:04
+M8,Pum 1,0:00:28:20
+M9,Corte,0:00:28:27
+M10,Pum 1,0:00:29:16
+M11,Pum 2,0:00:29:25
+M12,Pum 3,0:00:30:04
+M13,Pum 4,0:00:30:13
+M14,Pum 5,0:00:30:26
+M15,Golpes 1,0:00:31:09
+M16,Golpes 2,0:00:31:28
+M17,Golpes 3,0:00:32:24
+M18,Golpes 4,0:00:33:20
+M19,Cortes,0:00:34:03
+M20,Estrofa,0:00:34:23
+M21,Sonido,0:00:39:17
+M22,Pre Estrofa 2,0:00:47:24
+M23,Estrofa 2,0:00:48:20
+M24,Sonido,0:00:53:14
+M25,Nunca te pude hablar,0:01:02:18
+M26,Cambio 1,0:01:06:02
+M27,Cambio 2,0:01:07:24
+M28,Cambio 3,0:01:09:16
+M29,Cambio 4,0:01:13:01
+M30,Corte,0:01:14:23
+M31,Pre coro,0:01:16:08
+M32,CORO,0:01:16:15
+M33,Splash 1,0:01:19:03
+M34,Splash 2,0:01:20:00
+M35,Redoble,0:01:22:18
+M36,No redoble,0:01:23:14
+M37,Splash 1,0:01:26:02
+M38,Splash 2,0:01:26:28
+M39,Corte 1,0:01:28:20
+M40,Corte 2,0:01:29:03
+M41,Pre coro,0:01:30:06
+M42,CORO,0:01:30:13
+M43,Splash 1,0:01:33:01
+M44,Splash 2,0:01:33:27
+M45,Tun tun tun,0:01:35:19
+M46,Golpe 1,0:01:36:15
+M47,Golpe 2,0:01:36:28
+M48,CORO,0:01:37:11
+M49,Splash 1,0:01:40:00
+M50,Splash 2,0:01:40:26
+M51,Bajo,0:01:43:14
+M52,No quiero contar ,0:01:44:10
+M53,Corte 1,0:01:51:09
+M54,Corte 2,0:01:51:22
+M55,PUM,0:01:52:18
+M56,Golpe 1,0:01:55:19
+M57,Golpe 2,0:01:56:02
+M58,Oh oh oh,0:01:56:15
+M59,Oh oh oh 2,0:02:00:00
+M60,Oh oh oh 3,0:02:03:14
+M61,Oh oh oh 4,0:02:06:28
+M62,Pre corte,0:02:08:01
+M63,Caida,0:02:08:14
+M64,Guitarra,0:02:09:16
+M65,Estrofa 2,0:02:10:13
+M66,Sonido,0:02:15:06
+M67,Eh eh eh,0:02:20:26
+M68,Golpe 1,0:02:21:15
+M69,Golpe 2,0:02:22:11
+M70,Golpe 3,0:02:23:07
+M71,Golpes,0:02:23:20
+M72,Estrofa 2,0:02:24:10
+M73,Redoble,0:02:30:19
+M74,Estrofa 2,0:02:31:09
+M75,Eh eh eh ,0:02:34:23
+M76,Redoble,0:02:37:11
+M77,Nunca te pude hablar,0:02:38:07
+M78,Cambio 1,0:02:41:22
+M79,Cambio 2,0:02:43:14
+M80,Cambio 3,0:02:45:06
+M81,Corte,0:02:48:07
+M82,Redoble,0:02:48:27
+M83,Corte,0:02:50:06
+M84,Pre coro,0:02:51:28
+M85,CORO,0:02:52:05
+M86,Splash 1,0:02:54:23
+M87,Splash 2,0:02:55:19
+M88,Redoble,0:02:58:07
+M89,No redoble,0:02:59:03
+M90,Corte 1,0:03:04:10
+M91,Corte 2,0:03:04:23
+M92,Pre coro,0:03:05:25
+M93,CORO,0:03:06:02
+M94,Splash 1,0:03:08:20
+M95,Splash 2,0:03:09:16
+M96,Tun tun tun ,0:03:11:09
+M97,Golpe 1,0:03:12:05
+M98,Golpe 2,0:03:12:18
+M99,Golpe 3,0:03:13:01
+M100,Bajo,0:03:19:03
+M101,No quiero contar,0:03:20:00
+M102,Corte 1,0:03:26:28
+M103,Corte 2,0:03:27:11
+M104,Pum,0:03:28:07
+M105,Golpe 1,0:03:31:09
+M106,Golpe 2,0:03:31:22
+M107,Oh oh oh,0:03:32:05
+M108,Oh oh oh 2,0:03:35:19
+M109,Oh oh oh 3,0:03:39:03
+M110,Oh oh oh 4,0:03:42:18
+M111,Tun tun tun ,0:03:43:20
+M112,Corte,0:03:44:04
+M113,Guitarra,0:03:46:02
+M114,Sin guitarra,0:03:49:16
+M115,VOCES,0:03:51:02
+M116,Corte 1,0:03:52:05
+M117,Corte 2,0:03:52:18
+M118,Drum,0:03:56:15
+M119,Drum 2,0:03:57:20
+M120,Corte 1,0:03:58:07
+M121,Corte 2,0:03:58:20
+M122,pre coro,0:03:59:23
+M123,CORO,0:04:00:00
+M124,Splash 1,0:04:02:18
+M125,Splash 2,0:04:03:14
+M126,Redoble,0:04:06:02
+M127,Sin redoble,0:04:06:28
+M128,Bajo,0:04:13:01
+M129,No quiero contar,0:04:13:27
+M130,Corte 1,0:04:20:26
+M131,Corte 2,0:04:21:09
+M132,PUM,0:04:22:05
+M133,Bass,0:04:25:06
+M134,Intro + fuerte,0:04:26:22
+M135,Splash,0:04:33:20
+M136,Corte 1,0:04:38:07
+M137,Corte 2,0:04:38:14
+M138,Pum 1,0:04:39:03
+M139,Pum 2,0:04:39:12
+M140,Pum 3,0:04:39:21
+M141,Pum 4,0:04:40:00
+M142,Pum 5,0:04:40:13
+M143,Golpes 1,0:04:40:26
+M144,Golpes 2,0:04:41:15
+M145,Golpes 3,0:04:42:11
+M146,Golpes 4,0:04:43:07
+M147,Tun tun tun,0:04:43:20
+M148,BO,0:04:44:04
